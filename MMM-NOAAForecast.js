@@ -173,9 +173,12 @@ Module.register("MMM-NOAAForecast", {
       "animatedIconPlayDelay"
     ]);
 
-    //force icon set to mono version whern config.coloured = false
+    // Force the matching monochrome icon set when one is available.
     if (this.config.colored === false) {
-      this.config.iconset = this.config.iconset.replace("c", "m");
+      var monochromeIconset = this.config.iconset.replace("c", "m");
+      if (this.iconsets[monochromeIconset]) {
+        this.config.iconset = monochromeIconset;
+      }
     }
 
     //start data poll
@@ -1257,7 +1260,10 @@ Module.register("MMM-NOAAForecast", {
     "5m": { path: "5m", format: "svg" },
     "5c": { path: "5c", format: "svg" },
     "6fa": { path: "6fa", format: "svg" },
-    "6oa": { path: "6oa", format: "svg" }
+    "6oa": { path: "6oa", format: "svg" },
+    "7m": { path: "7m", format: "svg" },
+    "7c": { path: "7c", format: "svg" },
+    "8c": { path: "8c", format: "svg" }
   },
 
   /*

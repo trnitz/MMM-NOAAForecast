@@ -4,15 +4,15 @@ This is a module for [MagicMirror²](https://magicmirror.builders/).
 
 [MagicMirror² on GitHub](https://github.com/MichMich/MagicMirror)
 
-![Screenshot](/screenshots/MMM-NOAAForecast.png?raw=true "Screenshot")
+![Screenshot](screenshots/detailed_table_layout.png?raw=true "Screenshot")
 
 A weather module that displays current, hourly and daily forecast information using data from NOAA, not requiring API keys nor any fees. Of course, this means that this module is only useful for locations in the United States and its territories.
 
 IMPORTANT: Although it supports metric units, the textual data from NOAA is in imperial units, so ultimately the output will be mixed (but with units clearly denoted).
 
-This module incorporates code and inspiration from [MMM-OpenWeatherForecast](https://github.com/Tom-Hirschberger/MMM-OpenWeatherForecast) by Tom Hirschberger, licensed under the MIT License.
+The imperial/metric determination is made by the MagicMirror configuration option `units:` in your *config.js* file.
 
-**NOTE:** This module uses the Nunjucks templating system introduced in version 2.2.0 of MagicMirror. If you're seeing nothing on your display where you expect this module to appear, make sure your MagicMirror version is at least 2.2.0.
+This module incorporates code and inspiration from [MMM-OpenWeatherForecast](https://github.com/Tom-Hirschberger/MMM-OpenWeatherForecast) by Tom Hirschberger, licensed under the MIT License.
 
 ## Installation
 
@@ -83,12 +83,11 @@ Find out your latitude and longitude here:
   module: "MMM-NOAAForecast",
   header: "Weather",
   position: "top_right",
-  classes: "default everyone",
   disabled: false,
   config: {
-    latitude: "51.506130",
-    longitude: "-0.090270",
-    iconset: "4c",
+    latitude: "39.7392",
+    longitude: "-104.9902",
+    iconset: "1c",
     concise: false,
     forecastLayout: "table"
   }
@@ -98,10 +97,36 @@ Find out your latitude and longitude here:
 ## Icon Sets
 
 ![Icon Sets](icons/iconsets.gif?raw=true "Icon Sets")
+![Icon Sets 7 and 8](icons/iconsets-7-8.png?raw=true "Icon Sets 7 and 8")
 
-## Layouts
+Available values for `iconset` and `mainIconset`:
 
-![Layouts](/screenshots/forecast-layouts.png?raw=true "Layouts")
+| Value | Icon set |
+| --- | --- |
+| `1c`–`5c` | Original colored sets |
+| `1m`–`5m` | Original monochrome sets |
+| `6fa` | Filled animated set |
+| `6oa` | Outline animated set |
+| `7c` | [Meteocons](https://github.com/basmilius/weather-icons) static filled set |
+| `7m` | [Meteocons](https://github.com/basmilius/weather-icons) static monochrome set |
+| `8c` | [Makin-Things Weather Icons](https://github.com/Makin-Things/weather-icons) static set |
+
+Select a set by using the same value for the forecast and current-condition icons:
+
+```js
+config: {
+  iconset: "7c",
+  mainIconset: "7c"
+}
+```
+
+Replace `7c` with `7m` or `8c` to use one of the other sets.
+
+## Layout examples
+
+![Space-saving table layout](screenshots/compact_space_saving_table_layout.png?raw=true)
+![Current conditions without a forecast](screenshots/current_contditions_no_forecast_layout.png?raw=true)
+![Wide, colorful tiled layout](screenshots/wide_colorful_tiled_layout.png?raw=true)
 
 ## Styling
 
@@ -125,6 +150,8 @@ Most important elements of this module have one or more class names applied. Exa
 - [Free Weather Icons by Svilen Petrov](https://www.behance.net/gallery/12410195/Free-Weather-Icons)
 - [Weather Icons by Thom](https://dribbble.com/shots/1832162-Weather-Icons), designed for DuckDuckGo
 - Sets 4 and 5 were found on Graphberry: [Weather Icons](https://www.graphberry.com/item/weather-icons) and [Weathera Weather Forecast Icons](https://www.graphberry.com/item/weathera-weather-forecast-icons). The original artists could not be identified.
+- [Meteocons by Bas Milius](https://github.com/basmilius/weather-icons), licensed under the MIT License
+- [Makin-Things Weather Icons](https://github.com/Makin-Things/weather-icons), licensed under the MIT License
 
 Some of the icons were modified to better work with the module's
 structure and aesthetic.

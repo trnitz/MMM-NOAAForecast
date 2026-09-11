@@ -246,7 +246,10 @@ describe("Configuration Sanitization Tests", () => {
         "5m",
         "5c",
         "6fa",
-        "6oa"
+        "6oa",
+        "7m",
+        "7c",
+        "8c"
       ];
 
       expectedIconsets.forEach((iconset) => {
