@@ -1,8 +1,8 @@
 # MMM-NOAAForecast
 
-This a module for <strong>MagicMirror²</strong><br>
-https://magicmirror.builders/<br>
-https://github.com/MichMich/MagicMirror
+This is a module for [MagicMirror²](https://magicmirror.builders/).
+
+[MagicMirror² on GitHub](https://github.com/MichMich/MagicMirror)
 
 ![Screenshot](/screenshots/MMM-NOAAForecast.png?raw=true "Screenshot")
 
@@ -12,13 +12,22 @@ IMPORTANT: Although it supports metric units, the textual data from NOAA is in i
 
 This module incorporates code and inspiration from [MMM-OpenWeatherForecast](https://github.com/Tom-Hirschberger/MMM-OpenWeatherForecast) by Tom Hirschberger, licensed under the MIT License.
 
-\*NOTE:\*\* This module uses the Nunjucks templating system introduced in version 2.2.0 of MagicMirror. If you're seeing nothing on your display where you expect this module to appear, make sure your MagicMirror version is at least 2.2.0.
+**NOTE:** This module uses the Nunjucks templating system introduced in version 2.2.0 of MagicMirror. If you're seeing nothing on your display where you expect this module to appear, make sure your MagicMirror version is at least 2.2.0.
 
 ## Installation
 
-1. Navigate into your MagicMirror `modules` folder and execute<br>
-   `git clone https://github.com/trnitz/MMM-NOAAForecast.git`.
-2. Enter the new `MMM-NOAAForecast` directory and execute `npm install`.
+1. Navigate into your MagicMirror `modules` folder and clone the repository:
+
+   ```sh
+   git clone https://github.com/trnitz/MMM-NOAAForecast.git
+   ```
+
+2. Enter the new `MMM-NOAAForecast` directory and install its dependencies:
+
+   ```sh
+   cd MMM-NOAAForecast
+   npm install
+   ```
 
 ## Configuration
 
@@ -32,145 +41,40 @@ Find out your latitude and longitude here:
 
 ### Other optional parameters
 
-<table>
-  <thead>
-    <tr>
-      <th>Option</th>
-      <th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><code>frameWidth</code></td>
-      <td>Width of the rendered module column, in pixels. Increase to align with neighbouring modules in the same region.<br><br><strong>Type</strong> <code>Number</code><br>Defaults to <code>300</code></td>
-    </tr>
-    <tr>
-      <td><code>updateInterval</code></td>
-      <td>How frequently, in minutes, to poll for data. Be careful not to set this too frequent so that you don't exceed Dark Sky's 1000 free requests per day cap.<br><br><strong>Type</strong> <code>Number</code><br>Defaults to <code>10</code></td>
-    </tr>
-    <tr>
-      <td><code>requestDelay</code></td>
-      <td>In milliseconds, how long to delay the request.  If you have multiple instances of the module running, set one of them to a delay of a second or two to keep the API calls from being too close together.<br><br><strong>Type</strong> <code>Number</code><br>Defaults to <code>250</code></td>
-    </tr>
-    <tr>
-      <td><code>updateFadeSpeed</code></td>
-      <td>How quickly in milliseconds to fade the module out and in upon data refresh.  Set this to <code>0</code> for no fade.<br><br><strong>Type</strong> <code>Number</code><br>Defaults to <code>500</code> (i.e.: 1/2 second).</td>
-    </tr>
-    <tr>
-      <td><code>colored</code></td>
-      <td>Whether to present module in colour or black-and-white.  Note, if set to <code>false</code>, the monochramtic version of your chosen icon set will be forced if it exist.<br><br><strong>Type</strong> <code>Boolean</code><br>Defaults to <code>true</code></td>
-    </tr>
-    <tr>
-      <td><code>showCurrentConditions</code></td>
-      <td>Whether to show current temperaure and current conditions icon.<br><br><strong>Type</strong> <code>Boolean</code><br>Defaults to <code>true</code></td>
-    </tr>
-    <tr>
-      <td><code>showExtraCurrentConditions</code></td>
-      <td>Whether to show additional current conditions such as high/low temperatures, precipitation and wind speed.<br><br><strong>Type</strong> <code>Boolean</code><br>Defaults to <code>true</code></td>
-    </tr>
-    <tr>
-      <td><code>showDewPoint</code></td>
-      <td>Whether to show the current dew point in the extra current conditions. The value follows the configured global units.<br><br><strong>Type</strong> <code>Boolean</code><br>Defaults to <code>false</code></td>
-    </tr>
-    <tr>
-      <td><code>showSummary</code></td>
-      <td>Whether to show the forecast summary.<br><br><strong>Type</strong> <code>Boolean</code><br>Defaults to <code>true</code></td>
-    </tr>
-    <tr>
-      <td><code>forecastHeaderText</code></td>
-      <td>Show a header above the forecast display.<br><br><strong>Type</strong> <code>String</code><br>Defaults to <code>""</code></td>
-    </tr>
-    <tr>
-      <td><code>showForecastTableColumnHeaderIcons</code></td>
-      <td>Whether to show icons column headers on the forecast table.<br><br><strong>Type</strong> <code>Boolean</code><br>Defaults to <code>true</code></td>
-    </tr>
-    <tr>
-      <td><code>showHourlyForecast</code></td>
-      <td>Whether to show hourly forecast information. when set to <code>true</code> it works with the <code>hourlyForecastInterval</code> and <code>maxHourliesToShow</code> parameters.<br><br><strong>Type</strong> <code>Boolean</code><br>Defaults to <code>true</code></td>
-    </tr>
-    <tr>
-      <td><code>hourlyForecastInterval</code></td>
-      <td>How many hours apart each listed hourly forecast is.<br><br><strong>Type</strong> <code>Number</code><br>Defaults to <code>3</code></td>
-    </tr>
-    <tr>
-      <td><code>maxHourliesToShow</code></td>
-      <td>How many hourly forecasts to list.<br><br><strong>Type</strong> <code>Number</code><br>Defaults to <code>3</code></td>
-    </tr>
-    <tr>
-      <td><code>showDailyForecast</code></td>
-      <td>Whether to show daily forecast information. when set to <code>true</code> it works with the <code>maxDailiesToShow</code> parameter.<br><br><strong>Type</strong> <code>Boolean</code><br>Defaults to <code>true</code></td>
-    </tr>
-    <tr>
-      <td><code>maxDailiesToShow</code></td>
-      <td>How many daily forecasts to list.<br><br><strong>Type</strong> <code>Number</code><br>Defaults to <code>3</code></td>
-    </tr>
-    <tr>
-      <td><code>showPrecipitation</code></td>
-      <td>Whether to show precipitation information. This affects current conditions, hourly and daily forecasts. In <code>table</code> layout, hourly and daily rows stack accumulation beneath the precipitation chance so narrow columns stay readable.<br><br><strong>Type</strong> <code>Boolean</code><br>Defaults to <code>true</code></td>
-    </tr>
-    <tr>
-      <td><code>showPrecipitationStartStop</code></td>
-      <td>Whether to show when precipitation (rain or snow) is expected to start or stop. When enabled, the module analyzes hourly forecast data and displays a notification below the summary such as "Rain expected at 3 PM" or "Snow ending by 6 PM" if a change is detected within the next 24 hours.<br><br><strong>Type</strong> <code>Boolean</code><br>Defaults to <code>false</code></td>
-    </tr>
-    <tr>
-      <td><code>showWind</code></td>
-      <td>Whether to show wind information. This affects current conditions, hourly and daily forecasts<br><br><strong>Type</strong> <code>Boolean</code><br>Defaults to <code>true</code></td>
-    </tr>
-    <tr>
-      <td><code>concise</code></td>
-      <td>When set to <code>true</code>, this presents less information.  (e.g.: shorter summary, no precipitation accumulation, no wind gusts, etc.)<br><br><strong>Type</strong> <code>Boolean</code><br>Defaults to <code>true</code></td>
-    </tr>
-    <tr>
-      <td><code>iconset</code></td>
-      <td>Which icon set to use. See below for previews of the icon sets.<br><br><strong>Type</strong> <code>String</code><br>Defaults to <code>1c</code></td>
-    </tr>
-    <tr>
-      <td><code>mainIconset</code></td>
-      <td>Which icon set to use for current weather. See below for previews of the icon sets.<br><br><strong>Type</strong> <code>String</code><br>Defaults to <code>iconset value</code></td>
-    </tr>
-    <tr>
-      <td><code>useAnimatedIcons</code></td>
-      <td> *** <strong>LEGACY, please use icon set '6fa' or '6oa' for animated icons ***</strong> <p>Whether to use the Dark Sky's own animated icon set.  When set to true, this will override your choice for <code>iconset</code>. However, flat icons will still be used in some instances.  For example if you set the <code>animateMainIconOnly</code> parameter to true, daily and hourly forecasts will not be animated and instead will use your choice for <code>iconset</code>.  Inline icons (i.e. used to prefix precipitation and wind information) will always be flat.  A good <code>iconset</code> match for the animated set is <code>1c</code>.<br><br><strong>Type</strong> <code>Boolean</code><br>Defaults to <code>true</code></td>
-    </tr>
-    <tr>
-      <td><code>animateMainIconOnly</code></td>
-      <td>When set to <code>true</code>, only the main current conditions icon is animated. The rest use your choice for <code>iconset</code> (<code>1c</code> is a good match for the animated icon).  If you are running on a low-powered device like a Raspberry Pi, performance may suffer if you set this to <code>false</code>.  In my testing on a Pi 3b, enabling this ramped up CPU temperature by 15° - 20°, and fade transitions were not smooth.<br><br><strong>Type</strong> <code>Boolean</code><br>Defaults to <code>true</code></td>
-    </tr>
-    <tr>
-      <td><code>showInlineIcons</code></td>
-      <td>Whether to prefix wind and precipitation information with an icon.  Only affects the <code>tiled</code> layout.<br><br><strong>Type</strong> <code>Boolean</code><br>Defaults to <code>true</code></td>
-    </tr>
-    <tr>
-      <td><code>forecastLayout</code></td>
-      <td>Can be set to <code>tiled</code> or <code>table</code>. How to display hourly and forecast information.  See below for screenshot examples of each.<br><br><strong>Type</strong> <code>String</code><br>Defaults to <code>tiled</code></td>
-    </tr>
-    <tr>
-      <td><code>label_gust/code></td>
-      <td>The label you wish to display for prefixing wind gusts.<br><br><strong>Type</strong> <code>String</code><br>Defaults to <code>"max"</code>.</td>
-    </tr>
-    <tr>
-      <td><code>label_high</code></td>
-      <td>The label you wish to display for prefixing high temperature.<br><br><strong>Type</strong> <code>String</code><br>Defaults to <code>"H"</code>.</td>
-    </tr>
-    <tr>
-      <td><code>label_low</code></td>
-      <td>The label you wish to display for prefixing low temperature.<br><br><strong>Type</strong> <code>String</code><br>Defaults to <code>"L"</code>.</td>
-    </tr>
-    <tr>
-      <td><code>label_timeFormat</code></td>
-      <td>How you want the time formatted for hourly forecast display.  Accepts any valid moment.js format (https://momentjs.com/docs/#/displaying/format/). For example, specify short 24h format with <code>"k[h]"</code> (e.g.: <code>14h</code>)<br><br><strong>Type</strong> <code>String</code><br>Defaults to <code>"h a"</code> (e.g.: <code>9 am</code>)</td>
-    </tr>
-    <tr>
-      <td><code>label_days</code></td>
-      <td>How you would like the days of the week displayed for daily forecasts.  Assumes index <code>0</code> is Sunday.<br><br><strong>Type</strong> <code>Array of Strings</code><br>Defaults to <code>["Sun", "Mon", "Tue", "Wed", "Thur", "Fri", "Sat"]</code></td>
-    </tr>
-    <tr>
-      <td><code>label_ordinals</code></td>
-      <td>How you would like wind direction to be displayed.  Assumes index <code>0</code> is North and proceeds clockwise.<br><br><strong>Type</strong> <code>Array of Strings</code><br>Defaults to <code>["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"]</code></td>
-    </tr>
-
-  </tbody>
-</table>
+| Option | Type | Default | Description |
+| --- | --- | --- | --- |
+| `frameWidth` | Number | `300` | Width of the rendered module column in pixels. Increase it to align with neighbouring modules in the same region. |
+| `updateInterval` | Number | `10` | How frequently, in minutes, to poll NOAA for updated data. |
+| `requestDelay` | Number | `0` | Delay before the request, in milliseconds. Stagger this when running multiple instances so their requests are not made simultaneously. |
+| `updateFadeSpeed` | Number | `500` | Fade duration during a data refresh, in milliseconds. Set it to `0` to disable the fade. |
+| `colored` | Boolean | `true` | Whether to present the module in color. When `false`, the monochrome version of the selected icon set is used when available. |
+| `showCurrentConditions` | Boolean | `true` | Whether to show the current temperature and current-conditions icon. |
+| `showExtraCurrentConditions` | Boolean | `true` | Whether to show high/low temperatures, precipitation, wind speed, and other enabled current-condition details. |
+| `showDewPoint` | Boolean | `false` | Whether to show the current dew point. The value follows the configured global units. |
+| `showSummary` | Boolean | `true` | Whether to show the forecast summary. |
+| `forecastHeaderText` | String | `""` | Text displayed above the forecast. An empty string hides the header. |
+| `showForecastTableColumnHeaderIcons` | Boolean | `true` | Whether to show icon-based column headers in the table layout. |
+| `showHourlyForecast` | Boolean | `true` | Whether to show hourly forecasts. Used with `hourlyForecastInterval` and `maxHourliesToShow`. |
+| `hourlyForecastInterval` | Number | `3` | Number of hours between each displayed hourly forecast. |
+| `maxHourliesToShow` | Number | `3` | Maximum number of hourly forecasts to display. |
+| `showDailyForecast` | Boolean | `true` | Whether to show daily forecasts. Used with `maxDailiesToShow`. |
+| `maxDailiesToShow` | Number | `3` | Maximum number of daily forecasts to display. |
+| `showPrecipitation` | Boolean | `true` | Whether to show precipitation details for current, hourly, and daily conditions. In the table layout, accumulation is stacked beneath precipitation chance. |
+| `showPrecipitationStartStop` | Boolean | `false` | Whether to show a message when rain, snow, or other precipitation is expected to start or stop within 24 hours. |
+| `showWind` | Boolean | `true` | Whether to show wind information for current, hourly, and daily conditions. |
+| `concise` | Boolean | `true` | Whether to use shorter summaries and omit details such as precipitation accumulation and wind gusts. |
+| `iconset` | String | `"1c"` | Icon set used for forecast and inline icons. See the preview below. |
+| `mainIconset` | String | `"1c"` | Icon set used for the main current-weather icon. |
+| `useAnimatedIcons` | Boolean | `true` | Legacy Skycons animation support. Prefer the `6fa` or `6oa` animated icon sets. Flat icons are still used for inline details. |
+| `animateMainIconOnly` | Boolean | `true` | Whether legacy Skycons animation is limited to the main current-conditions icon. Disabling this may affect performance on low-powered devices. |
+| `showInlineIcons` | Boolean | `true` | Whether to prefix wind and precipitation information with icons. This primarily affects the tiled layout. |
+| `forecastLayout` | String | `"tiled"` | Forecast layout. Accepted values are `"tiled"` and `"table"`. |
+| `label_gust` | String | `"max"` | Label placed before wind gust values. |
+| `label_high` | String | `"H"` | Label placed before high temperatures. |
+| `label_low` | String | `"L"` | Label placed before low temperatures. |
+| `label_timeFormat` | String | `"h a"` | Hourly forecast time format using [Moment.js tokens](https://momentjs.com/docs/#/displaying/format/). For example, `"k[h]"` displays `14h`. |
+| `label_days` | Array of strings | `['Sun', 'Mon', 'Tue', 'Wed', 'Thur', 'Fri', 'Sat']` | Day labels beginning with Sunday at index `0`. |
+| `label_ordinals` | Array of strings | 16 compass points | Wind-direction labels beginning with north at index `0` and proceeding clockwise. |
 
 ## Sample Configuration
 
@@ -216,25 +120,11 @@ Most important elements of this module have one or more class names applied. Exa
 
 ## Attributions
 
-**Skycons - Animated icon set by Dark Sky**<br />
-http://darkskyapp.github.io/skycons/<br />
-(using the fork created by Maxime Warner that allows individual details of the icons to be colored<br />
-https://github.com/maxdow/skycons)
-
-**Climacons by Adam Whitcroft**<br />
-http://adamwhitcroft.com/climacons/
-
-**Free Weather Icons by Svilen Petrov**<br />
-https://www.behance.net/gallery/12410195/Free-Weather-Icons
-
-**Weather Icons by Thom**<br />
-(Designed for DuckDuckGo)<br />
-https://dribbble.com/shots/1832162-Weather-Icons
-
-Sets 4 and 5 were found on Graphberry, but I couldn't find
-the original artists.<br />
-https://www.graphberry.com/item/weather-icons<br />
-https://www.graphberry.com/item/weathera-weather-forecast-icons
+- [Skycons animated icons by Dark Sky](http://darkskyapp.github.io/skycons/), using [Maxime Warner's fork](https://github.com/maxdow/skycons), which supports coloring individual details
+- [Climacons by Adam Whitcroft](http://adamwhitcroft.com/climacons/)
+- [Free Weather Icons by Svilen Petrov](https://www.behance.net/gallery/12410195/Free-Weather-Icons)
+- [Weather Icons by Thom](https://dribbble.com/shots/1832162-Weather-Icons), designed for DuckDuckGo
+- Sets 4 and 5 were found on Graphberry: [Weather Icons](https://www.graphberry.com/item/weather-icons) and [Weathera Weather Forecast Icons](https://www.graphberry.com/item/weathera-weather-forecast-icons). The original artists could not be identified.
 
 Some of the icons were modified to better work with the module's
 structure and aesthetic.
@@ -242,7 +132,6 @@ structure and aesthetic.
 The dew point icon is from **[MMM-OpenWeatherForecast](https://github.com/jclarke0000/MMM-OpenWeatherForecast)**
 by Jeff Clarke, licensed under the MIT License.
 
-**[MMM-OpenWeatherForecast](https://github.com/Tom-Hirschberger/MMM-OpenWeatherForecast)** by Tom Hirschberger
-is licensed under the MIT License.<br />
+[MMM-OpenWeatherForecast](https://github.com/Tom-Hirschberger/MMM-OpenWeatherForecast) by Tom Hirschberger is licensed under the MIT License.
 
-**Data from [NOAA](https://www.weather.gov/documentation/services-web-api)** <br/>
+Data provided by the [NOAA Weather API](https://www.weather.gov/documentation/services-web-api).
