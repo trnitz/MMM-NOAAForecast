@@ -31,6 +31,7 @@ Module.register("MMM-NOAAForecast", {
     compactForecastWind: false,
     showWind: true,
     showFeelsLike: true,
+    showDewPoint: false,
     showPrecipitationStartStop: false,
     iconset: "1c",
     mainIconset: "1c",
@@ -101,7 +102,8 @@ Module.register("MMM-NOAAForecast", {
       inlineIcons: {
         rain: this.generateIconSrc("i-rain"),
         snow: this.generateIconSrc("i-snow"),
-        wind: this.generateIconSrc("i-wind")
+        wind: this.generateIconSrc("i-wind"),
+        dewPoint: this.generateIconSrc("i-dewpoint")
       },
       animatedIconSizes: {
         main: this.config.mainIconSize,
@@ -656,6 +658,11 @@ Module.register("MMM-NOAAForecast", {
           "windGust"
         );
 
+        hourly.dewPoint = this.getGridValueWithinDuration(
+          this.weatherData.hourly[j].startTime,
+          "dewpoint"
+        );
+
         hourly.feelsLike = this.calculateFeelsLike(
           hourly.temperature,
           hourly.windGust,
@@ -978,6 +985,12 @@ Module.register("MMM-NOAAForecast", {
       currently: {
         temperature: `${Math.round(this.weatherData.hourly[0].temperature)}°`,
         feelslike: `${Math.round(this.weatherData.hourly[0].feelsLike)}°`,
+        dewPoint:
+          this.weatherData.hourly[0].dewPoint !== undefined &&
+          this.weatherData.hourly[0].dewPoint !== null &&
+          !isNaN(parseFloat(this.weatherData.hourly[0].dewPoint))
+            ? `${Math.round(parseFloat(this.weatherData.hourly[0].dewPoint))}°`
+            : null,
         animatedIconId: this.config.useAnimatedIcons
           ? this.getAnimatedIconId()
           : null,
@@ -1222,13 +1235,14 @@ Module.register("MMM-NOAAForecast", {
         thunderstorm,
         tornado
 
-      Lastly, the icons also contain three icons for use as inline
-      indicators beside precipitation and wind conditions. These
+      Lastly, the icons also contain four icons for use as inline
+      indicators beside precipitation, wind, and dew point conditions. These
       ones look best if designed to a 24px X 24px artboard.
 
         i-rain
         i-snow
         i-wind
+        i-dewpoint
 
      */
   iconsets: {

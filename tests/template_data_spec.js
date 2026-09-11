@@ -151,6 +151,13 @@ describe("getTemplateData Tests", () => {
       expect(result.inlineIcons.wind).toContain("i-wind");
     });
 
+    it("should include dew point inline icon path", () => {
+      const result = module.getTemplateData();
+
+      expect(result.inlineIcons.dewPoint).toBeDefined();
+      expect(result.inlineIcons.dewPoint).toContain("i-dewpoint");
+    });
+
     it("should use configured iconset for inline icons", () => {
       module.config.iconset = "2m";
 

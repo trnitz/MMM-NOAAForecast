@@ -80,6 +80,7 @@ describe("Process Weather Data Pipeline Tests", () => {
         relativeHumidity: { value: 50 },
         probabilityOfPrecipitation: { value: 20 },
         feelsLike: 63 + i,
+        dewPoint: 42.4,
         rainAccumulation: null,
         snowAccumulation: null
       });
@@ -164,6 +165,7 @@ describe("Process Weather Data Pipeline Tests", () => {
 
       expect(result.currently.temperature).toBeDefined();
       expect(result.currently.feelslike).toBeDefined();
+      expect(result.currently.dewPoint).toBeDefined();
       expect(result.currently.iconPath).toBeDefined();
       expect(result.currently.tempRange).toBeDefined();
       expect(result.currently.precipitation).toBeDefined();
@@ -182,6 +184,20 @@ describe("Process Weather Data Pipeline Tests", () => {
       expect(result.currently.feelslike).toMatch(/^-?\d+°$/);
     });
 
+    it("should format current dew point correctly", () => {
+      const result = module.processWeatherData();
+
+      expect(result.currently.dewPoint).toBe("42°");
+    });
+
+    it("should omit current dew point when NOAA has no value", () => {
+      module.weatherData.hourly[0].dewPoint = undefined;
+
+      const result = module.processWeatherData();
+
+      expect(result.currently.dewPoint).toBeNull();
+    });
+
     it("should include summary from forecast", () => {
       const result = module.processWeatherData();
 
@@ -193,6 +209,33 @@ describe("Process Weather Data Pipeline Tests", () => {
       const result = module.processWeatherData();
 
       expect(result.summary).toContain("Partly cloudy with a high near 72");
+    });
+  });
+
+  describe("dew point ingestion", () => {
+    it("reads NOAA grid dew point data and converts it to Fahrenheit", () => {
+      const startTime = moment().startOf("hour").format();
+      module.weatherData = {
+        daily: [],
+        hourly: [
+          {
+            startTime,
+            temperature: 50,
+            temperatureUnit: "F",
+            relativeHumidity: { value: 60 }
+          }
+        ],
+        grid: {
+          dewpoint: {
+            uom: "wmoUnit:degC",
+            values: [{ validTime: `${startTime}/PT1H`, value: 0 }]
+          }
+        }
+      };
+
+      module.preProcessWeatherData();
+
+      expect(module.weatherData.hourly[0].dewPoint).toBe("32");
     });
   });
 

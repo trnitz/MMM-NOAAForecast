@@ -32,6 +32,13 @@
           <span class="low-temperature">{{ forecast.currently.tempRange.low }}</span>
         </span>
 
+        {% if config.showDewPoint and forecast.currently.dewPoint %}
+          <span class="dew-point-container">
+            <img class="inline-icon dew-point-icon" src="{{ inlineIcons.dewPoint }}" alt="" />
+            <span class="dew-point">{{ forecast.currently.dewPoint }}</span>
+          </span>
+        {% endif %}
+
         {% if config.showPrecipitation %}
 
           <span class="precipitation-container">

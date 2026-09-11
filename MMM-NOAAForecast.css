@@ -115,6 +115,7 @@
 /* Extra Current Conditions */
 
 .MMM-NOAAForecast .extra-current-conditions-wrapper .temperature-container,
+.MMM-NOAAForecast .extra-current-conditions-wrapper .dew-point-container,
 .MMM-NOAAForecast .extra-current-conditions-wrapper .precipitation-container,
 .MMM-NOAAForecast .extra-current-conditions-wrapper .wind-container {
   display: inline-block;

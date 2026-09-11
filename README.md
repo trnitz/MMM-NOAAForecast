@@ -69,6 +69,10 @@ Find out your latitude and longitude here:
       <td>Whether to show additional current conditions such as high/low temperatures, precipitation and wind speed.<br><br><strong>Type</strong> <code>Boolean</code><br>Defaults to <code>true</code></td>
     </tr>
     <tr>
+      <td><code>showDewPoint</code></td>
+      <td>Whether to show the current dew point in the extra current conditions. The value follows the configured global units.<br><br><strong>Type</strong> <code>Boolean</code><br>Defaults to <code>false</code></td>
+    </tr>
+    <tr>
       <td><code>showSummary</code></td>
       <td>Whether to show the forecast summary.<br><br><strong>Type</strong> <code>Boolean</code><br>Defaults to <code>true</code></td>
     </tr>
@@ -234,6 +238,9 @@ https://www.graphberry.com/item/weathera-weather-forecast-icons
 
 Some of the icons were modified to better work with the module's
 structure and aesthetic.
+
+The dew point icon is from **[MMM-OpenWeatherForecast](https://github.com/jclarke0000/MMM-OpenWeatherForecast)**
+by Jeff Clarke, licensed under the MIT License.
 
 **[MMM-OpenWeatherForecast](https://github.com/Tom-Hirschberger/MMM-OpenWeatherForecast)** by Tom Hirschberger
 is licensed under the MIT License.<br />
