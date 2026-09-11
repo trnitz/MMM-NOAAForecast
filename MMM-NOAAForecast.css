@@ -12,6 +12,19 @@
   display: block;
 }
 
+.MMM-NOAAForecast .weather-status {
+  margin-bottom: 8px;
+  text-align: right;
+}
+
+.MMM-NOAAForecast .weather-error {
+  color: #d88;
+}
+
+.MMM-NOAAForecast .weather-stale {
+  color: #f5b041;
+}
+
 .MMM-NOAAForecast .forecast-container .forecast-item .temperature,
 .MMM-NOAAForecast .forecast-container .forecast-item .temperature-container {
   color: #fff;

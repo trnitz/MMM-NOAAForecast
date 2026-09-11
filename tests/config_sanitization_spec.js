@@ -74,6 +74,14 @@ describe("Configuration Sanitization Tests", () => {
       expect(module.config.updateInterval).toBe(defaultValue);
     });
 
+    it("should reject values with a numeric prefix and invalid suffix", () => {
+      module.config.updateInterval = "10 minutes";
+
+      module.sanitizeNumbers(["updateInterval"]);
+
+      expect(module.config.updateInterval).toBe(module.defaults.updateInterval);
+    });
+
     it("should handle empty strings by using defaults", () => {
       module.config.updateInterval = "";
       const defaultValue = module.defaults.updateInterval;
@@ -117,12 +125,12 @@ describe("Configuration Sanitization Tests", () => {
       expect(module.config.updateInterval).toBe(15);
     });
 
-    it("should handle negative numbers", () => {
+    it("should clamp negative polling intervals to a safe minimum", () => {
       module.config.updateInterval = -5;
 
       module.sanitizeNumbers(["updateInterval"]);
 
-      expect(module.config.updateInterval).toBe(-5);
+      expect(module.config.updateInterval).toBe(5);
     });
 
     it("should handle zero", () => {
@@ -168,6 +176,41 @@ describe("Configuration Sanitization Tests", () => {
       module.sanitizeNumbers([]);
 
       expect(module.config).toEqual(originalConfig);
+    });
+
+    it("should sanitize every configurable size", () => {
+      module.config.frameWidth = "450";
+      module.config.mainIconSize = "110";
+      module.config.forecastTiledIconSize = "75";
+      module.config.forecastTableIconSize = "35";
+
+      module.sanitizeConfiguration();
+
+      expect(module.config.frameWidth).toBe(450);
+      expect(module.config.mainIconSize).toBe(110);
+      expect(module.config.forecastTiledIconSize).toBe(75);
+      expect(module.config.forecastTableIconSize).toBe(35);
+    });
+
+    it("should fall back from unknown icon sets", () => {
+      module.config.iconset = "missing";
+      module.config.mainIconset = "also-missing";
+
+      module.sanitizeConfiguration();
+
+      expect(module.config.iconset).toBe("1c");
+      expect(module.config.mainIconset).toBe("1c");
+    });
+
+    it("should select monochrome forecast and main sets", () => {
+      module.config.iconset = "7c";
+      module.config.mainIconset = "2c";
+      module.config.colored = false;
+
+      module.sanitizeConfiguration();
+
+      expect(module.config.iconset).toBe("7m");
+      expect(module.config.mainIconset).toBe("2m");
     });
   });
 
@@ -297,7 +340,7 @@ describe("Configuration Sanitization Tests", () => {
     });
 
     it("should have wind speed units for metric", () => {
-      expect(module.units.windSpeed.metric).toBe("m/s");
+      expect(module.units.windSpeed.metric).toBe("km/h");
     });
   });
 });

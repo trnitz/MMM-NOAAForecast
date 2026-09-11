@@ -94,9 +94,13 @@ Module.register("MMM-NOAAForecast", {
   getTemplateData: function () {
     return {
       phrases: {
-        loading: this.translate("LOADING")
+        loading: this.translate("LOADING"),
+        unavailable: "Weather data temporarily unavailable",
+        stale: "Weather data may be outdated"
       },
       loading: this.formattedWeatherData === null ? true : false,
+      weatherError: this.weatherError,
+      weatherDataStale: this.weatherDataStale,
       config: this.config,
       forecast: this.formattedWeatherData,
       inlineIcons: {
@@ -124,6 +128,8 @@ Module.register("MMM-NOAAForecast", {
     this.weatherData = null;
     this.iconIdCounter = 0;
     this.formattedWeatherData = null;
+    this.weatherError = null;
+    this.weatherDataStale = false;
     this.animatedIconDrawTimer = null;
 
     /*
@@ -151,35 +157,7 @@ Module.register("MMM-NOAAForecast", {
       });
     }
 
-    //sanitize optional parameters
-    if (this.validLayouts.indexOf(this.config.forecastLayout) === -1) {
-      this.config.forecastLayout = "tiled";
-    }
-    if (this.iconsets[this.config.iconset] === null) {
-      this.config.iconset = "1c";
-    }
-    if (this.iconsets[this.config.mainIconset] === null) {
-      this.config.mainIconset = this.config.iconset;
-    }
-    this.sanitizeNumbers([
-      "updateInterval",
-      "requestDelay",
-      "hourlyForecastInterval",
-      "maxHourliesToShow",
-      "maxDailiesToShow",
-      "mainIconSize",
-      "forecastIconSize",
-      "updateFadeSpeed",
-      "animatedIconPlayDelay"
-    ]);
-
-    // Force the matching monochrome icon set when one is available.
-    if (this.config.colored === false) {
-      var monochromeIconset = this.config.iconset.replace("c", "m");
-      if (this.iconsets[monochromeIconset]) {
-        this.config.iconset = monochromeIconset;
-      }
-    }
+    this.sanitizeConfiguration();
 
     //start data poll
     var self = this;
@@ -193,12 +171,48 @@ Module.register("MMM-NOAAForecast", {
     }, this.config.requestDelay);
   },
 
+  sanitizeConfiguration: function () {
+    if (this.validLayouts.indexOf(this.config.forecastLayout) === -1) {
+      this.config.forecastLayout = "tiled";
+    }
+    if (!this.iconsets[this.config.iconset]) {
+      this.config.iconset = "1c";
+    }
+    if (!this.iconsets[this.config.mainIconset]) {
+      this.config.mainIconset = this.config.iconset;
+    }
+    this.sanitizeNumbers([
+      "frameWidth",
+      "updateInterval",
+      "requestDelay",
+      "hourlyForecastInterval",
+      "maxHourliesToShow",
+      "maxDailiesToShow",
+      "mainIconSize",
+      "forecastTiledIconSize",
+      "forecastTableIconSize",
+      "updateFadeSpeed"
+    ]);
+
+    // Force the matching monochrome icon set when one is available.
+    if (this.config.colored === false) {
+      var monochromeIconset = this.config.iconset.replace("c", "m");
+      if (this.iconsets[monochromeIconset]) {
+        this.config.iconset = monochromeIconset;
+      }
+      var monochromeMainIconset = this.config.mainIconset.replace("c", "m");
+      if (this.iconsets[monochromeMainIconset]) {
+        this.config.mainIconset = monochromeMainIconset;
+      }
+    }
+  },
+
   getData: function () {
     this.sendSocketNotification("NOAA_CALL_FORECAST_GET", {
       latitude: this.config.latitude,
       longitude: this.config.longitude,
       instanceId: this.identifier,
-      requestDelay: this.config.requestDelay
+      units: this.config.units
     });
   },
 
@@ -207,24 +221,57 @@ Module.register("MMM-NOAAForecast", {
       notification === "NOAA_CALL_FORECAST_DATA" &&
       payload.instanceId === this.identifier
     ) {
-      //clear animated icon cache
-      if (this.config.useAnimatedIcons) {
-        this.clearIcons();
+      var previousWeatherData = this.weatherData;
+      try {
+        var parsePayload = function (value) {
+          return typeof value === "string" ? JSON.parse(value) : value;
+        };
+        var dailyResponse = parsePayload(payload.payload.forecast);
+        var hourlyResponse = parsePayload(payload.payload.forecastHourly);
+        var gridResponse = parsePayload(payload.payload.forecastGridData);
+
+        if (
+          !dailyResponse ||
+          !dailyResponse.properties ||
+          !Array.isArray(dailyResponse.properties.periods) ||
+          dailyResponse.properties.periods.length === 0 ||
+          !hourlyResponse ||
+          !hourlyResponse.properties ||
+          !Array.isArray(hourlyResponse.properties.periods) ||
+          hourlyResponse.properties.periods.length === 0 ||
+          !gridResponse ||
+          !gridResponse.properties
+        ) {
+          throw new Error("NOAA returned incomplete forecast data");
+        }
+
+        this.weatherData = {
+          daily: dailyResponse.properties.periods,
+          hourly: hourlyResponse.properties.periods,
+          grid: gridResponse.properties
+        };
+
+        this.preProcessWeatherData();
+        var formattedWeatherData = this.processWeatherData();
+
+        // Clear animated icons only after parsing and processing both succeed.
+        if (this.config.useAnimatedIcons) {
+          this.clearIcons();
+        }
+
+        this.dataRefreshTimeStamp = moment().format("x");
+        this.formattedWeatherData = formattedWeatherData;
+        this.weatherError = null;
+        this.weatherDataStale = false;
+        this.updateDom(this.config.updateFadeSpeed);
+      } catch (error) {
+        this.weatherData = previousWeatherData;
+        Log.error(`[MMM-NOAAForecast] ${error.message}`);
+        this.weatherError = error.message;
+        this.weatherDataStale = this.formattedWeatherData !== null;
+        this.updateDom(this.config.updateFadeSpeed);
+        return;
       }
-
-      //process weather data
-      this.dataRefreshTimeStamp = moment().format("x");
-      this.weatherData = {
-        daily: JSON.parse(payload.payload.forecast).properties.periods,
-        hourly: JSON.parse(payload.payload.forecastHourly).properties.periods,
-        grid: JSON.parse(payload.payload.forecastGridData).properties
-      };
-
-      this.preProcessWeatherData();
-
-      this.formattedWeatherData = this.processWeatherData();
-
-      this.updateDom(this.config.updateFadeSpeed);
 
       //broadcast weather update
       this.sendNotification("CALL_FORECAST_WEATHER_UPDATE", payload);
@@ -253,12 +300,21 @@ Module.register("MMM-NOAAForecast", {
           }
         }, 100);
       }
+    } else if (
+      notification === "NOAA_CALL_FORECAST_ERROR" &&
+      payload &&
+      payload.instanceId === this.identifier
+    ) {
+      this.weatherError = payload.error || "Unable to retrieve NOAA data";
+      this.weatherDataStale = this.formattedWeatherData !== null;
+      Log.error(`[MMM-NOAAForecast] ${this.weatherError}`);
+      this.updateDom(this.config.updateFadeSpeed);
     }
   },
 
   accumulateValueForTimestamp: function (targetTimestamp, arr) {
     if (!targetTimestamp || !Array.isArray(arr)) return undefined;
-    var target = moment.parseZone(targetTimestamp);
+    var target = moment.parseZone(targetTimestamp, moment.ISO_8601, true);
     if (!target.isValid()) return undefined;
 
     // accumulate values for entries whose start date equals the target date
@@ -333,10 +389,12 @@ Module.register("MMM-NOAAForecast", {
 
   findValueForTimestampMatchingDay: function (targetTimestamp, arr) {
     if (!targetTimestamp || !Array.isArray(arr)) return undefined;
-    var target = new Date(targetTimestamp);
-    if (isNaN(target.getTime())) return undefined;
-
-    var result = undefined;
+    var targetMoment = moment.parseZone(
+      targetTimestamp,
+      moment.ISO_8601,
+      true
+    );
+    if (!targetMoment.isValid()) return undefined;
 
     for (var i = 0; i < arr.length; i++) {
       var entry = arr[i];
@@ -352,14 +410,13 @@ Module.register("MMM-NOAAForecast", {
         ) {
           var startMoment = moment.parseZone(parts[0]);
           if (startMoment.isValid()) {
-            var targetMoment = moment.parseZone(target);
-            if (!targetMoment.isValid()) {
-              continue;
-            }
-            // Compare calendar dates as strings (timezone-aware)
-            // Extract "YYYY-MM-DD" from each timestamp in its own timezone
+            // NOAA grid days are defined in the grid timestamp's timezone.
+            // Convert the target instant to that offset before comparing dates.
+            var targetInGridTimezone = targetMoment
+              .clone()
+              .utcOffset(startMoment.utcOffset());
             var startDate = startMoment.format("YYYY-MM-DD");
-            var targetDate = targetMoment.format("YYYY-MM-DD");
+            var targetDate = targetInGridTimezone.format("YYYY-MM-DD");
             if (startDate === targetDate) {
               return entry.value;
             } else {
@@ -449,8 +506,6 @@ Module.register("MMM-NOAAForecast", {
       val = this.convertDistance(val, true);
     } else if (unit === "wmoUnit:km_h-1" && this.config.units === "imperial") {
       val = this.convertSpeed(val, true);
-    } else if (unit === "wmoUnit:km_h-1" && this.config.units === "metric") {
-      val = this.convertSpeed(val, false);
     }
 
     return val;
@@ -515,7 +570,8 @@ Module.register("MMM-NOAAForecast", {
     // wind: number (mph if units !== 'metric', km/h if units === 'metric')
     // humidityPercent: number (0-100)
     var t = parseFloat(String(temp));
-    var v = parseFloat(String(wind));
+    var windString = String(wind || "");
+    var v = parseFloat(windString);
     var h =
       typeof humidityPercent === "number"
         ? humidityPercent
@@ -529,7 +585,16 @@ Module.register("MMM-NOAAForecast", {
 
     // Convert metric inputs to Fahrenheit and mph for formula calculation
     var tempF = isMetric ? t * (9 / 5) + 32 : t;
-    var windMph = isMetric ? v / 1.609344 : v;
+    var windMph;
+    if (/km\/?h/i.test(windString)) {
+      windMph = v / 1.609344;
+    } else if (/m\/?s/i.test(windString)) {
+      windMph = v * 2.236936;
+    } else if (/mph/i.test(windString)) {
+      windMph = v;
+    } else {
+      windMph = isMetric ? v / 1.609344 : v;
+    }
 
     var feelsF = tempF;
 
@@ -570,7 +635,7 @@ Module.register("MMM-NOAAForecast", {
   calculateDailyMinMaxFromHourly: function (dailyStartTime) {
     var result = { minTemp: null, maxTemp: null };
 
-    var dailyStart = moment.parseZone(dailyStartTime);
+    var dailyStart = moment.parseZone(dailyStartTime, moment.ISO_8601, true);
     if (!dailyStart.isValid() || !Array.isArray(this.weatherData.hourly)) {
       return result;
     }
@@ -579,7 +644,11 @@ Module.register("MMM-NOAAForecast", {
       var hourlyEntry = this.weatherData.hourly[h];
       if (!hourlyEntry || !hourlyEntry.startTime) continue;
 
-      var hourlyStart = moment.parseZone(hourlyEntry.startTime);
+      var hourlyStart = moment.parseZone(
+        hourlyEntry.startTime,
+        moment.ISO_8601,
+        true
+      );
       if (!hourlyStart.isValid()) continue;
 
       // Check if this hourly entry belongs to the same day
@@ -668,8 +737,8 @@ Module.register("MMM-NOAAForecast", {
 
         hourly.feelsLike = this.calculateFeelsLike(
           hourly.temperature,
-          hourly.windGust,
-          hourly.relativeHumidity.value
+          hourly.windSpeed,
+          hourly.relativeHumidity && hourly.relativeHumidity.value
         );
       }
     }
@@ -917,8 +986,11 @@ Module.register("MMM-NOAAForecast", {
     if (this.config.showHourlyForecast) {
       var displayCounter = 0;
       var currentIndex = this.config.hourlyForecastInterval;
-      while (displayCounter < this.config.maxHourliesToShow) {
-        if (this.weatherData.hourly[currentIndex] === null) {
+      while (
+        displayCounter < this.config.maxHourliesToShow &&
+        currentIndex < this.weatherData.hourly.length
+      ) {
+        if (!this.weatherData.hourly[currentIndex]) {
           break;
         }
 
@@ -953,12 +1025,15 @@ Module.register("MMM-NOAAForecast", {
       }
 
       var i = this.config.includeTodayInDailyForecast ? 0 : firstTomorrowIndex;
+      if (i < 0) {
+        i = this.weatherData.daily.length;
+      }
 
       var previousEntryDate = undefined;
 
       var dailiesShows = 0;
       for (i; i < this.weatherData.daily.length; i++) {
-        if (this.weatherData.daily[i] === null) {
+        if (!this.weatherData.daily[i]) {
           break;
         }
 
@@ -1205,8 +1280,8 @@ Module.register("MMM-NOAAForecast", {
     },
     windSpeed: {
       imperial: "mph",
-      metric: "m/s",
-      "": "m/s"
+      metric: "km/h",
+      "": "km/h"
     }
   },
 
@@ -1414,11 +1489,35 @@ Module.register("MMM-NOAAForecast", {
      */
   sanitizeNumbers: function (keys) {
     var self = this;
+    var minimums = {
+      frameWidth: 100,
+      updateInterval: 5,
+      requestDelay: 0,
+      hourlyForecastInterval: 1,
+      maxHourliesToShow: 0,
+      maxDailiesToShow: 0,
+      mainIconSize: 1,
+      forecastTiledIconSize: 1,
+      forecastTableIconSize: 1,
+      updateFadeSpeed: 0
+    };
     keys.forEach(function (key) {
-      if (isNaN(parseInt(self.config[key]))) {
+      var configuredValue = self.config[key];
+      var parsedValue =
+        configuredValue === null || configuredValue === ""
+          ? NaN
+          : Number(configuredValue);
+      if (!Number.isFinite(parsedValue)) {
         self.config[key] = self.defaults[key];
       } else {
-        self.config[key] = parseInt(self.config[key]);
+        self.config[key] = Math.trunc(parsedValue);
+      }
+
+      if (
+        Object.prototype.hasOwnProperty.call(minimums, key) &&
+        self.config[key] < minimums[key]
+      ) {
+        self.config[key] = minimums[key];
       }
     });
   }

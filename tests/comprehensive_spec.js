@@ -216,6 +216,12 @@ describe("MMM-NOAAForecast Comprehensive Tests", () => {
       expect(result).toBe("62");
     });
 
+    it("should preserve wmoUnit:km_h-1 when units=metric", () => {
+      module.config.units = "metric";
+      const result = module.convertIfNeeded(100, "wmoUnit:km_h-1");
+      expect(result).toBe(100);
+    });
+
     it("should not convert when units match", () => {
       module.config.units = "imperial";
       const result = module.convertIfNeeded(75, "wmoUnit:degF");
@@ -255,6 +261,12 @@ describe("MMM-NOAAForecast Comprehensive Tests", () => {
       // 5°C, 25 km/h wind
       const result = module.calculateFeelsLike(5, 25, 50);
       expect(result).toBeLessThan(5);
+    });
+
+    it("should honor an explicit mph wind unit in metric mode", () => {
+      module.config.units = "metric";
+      const result = module.calculateFeelsLike(0, "10 mph", 50);
+      expect(result).toBeCloseTo(-4.6, 1);
     });
 
     it("should handle metric units for heat index", () => {

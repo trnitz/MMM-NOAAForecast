@@ -267,6 +267,15 @@ describe("Process Weather Data Pipeline Tests", () => {
       expect(result.hourly).toHaveLength(3);
     });
 
+    it("should stop cleanly when the requested interval exceeds available data", () => {
+      module.config.hourlyForecastInterval = 100;
+      module.config.maxHourliesToShow = 20;
+
+      const result = module.processWeatherData();
+
+      expect(result.hourly).toHaveLength(0);
+    });
+
     it("should return empty array when showHourlyForecast is false", () => {
       module.config.showHourlyForecast = false;
 
@@ -324,6 +333,15 @@ describe("Process Weather Data Pipeline Tests", () => {
 
       // Should include today's forecast
       expect(result.daily.length).toBeGreaterThan(0);
+    });
+
+    it("should return no daily rows when tomorrow is unavailable", () => {
+      module.weatherData.daily = [module.weatherData.daily[0]];
+      module.config.includeTodayInDailyForecast = false;
+
+      const result = module.processWeatherData();
+
+      expect(result.daily).toHaveLength(0);
     });
 
     it("should format daily items correctly", () => {

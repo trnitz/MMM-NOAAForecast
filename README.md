@@ -8,7 +8,7 @@ This is a module for [MagicMirror²](https://magicmirror.builders/).
 
 A weather module that displays current, hourly and daily forecast information using data from NOAA, not requiring API keys nor any fees. Of course, this means that this module is only useful for locations in the United States and its territories.
 
-IMPORTANT: Although it supports metric units, the textual data from NOAA is in imperial units, so ultimately the output will be mixed (but with units clearly denoted).
+The NOAA forecast endpoints are requested in the unit system selected by MagicMirror. NOAA-supplied narrative text may still contain units chosen by NOAA.
 
 The imperial/metric determination is made by the MagicMirror configuration option `units:` in your *config.js* file.
 
@@ -43,9 +43,9 @@ Find out your latitude and longitude here:
 
 | Option | Type | Default | Description |
 | --- | --- | --- | --- |
-| `frameWidth` | Number | `300` | Width of the rendered module column in pixels. Increase it to align with neighbouring modules in the same region. |
-| `updateInterval` | Number | `10` | How frequently, in minutes, to poll NOAA for updated data. |
-| `requestDelay` | Number | `0` | Delay before the request, in milliseconds. Stagger this when running multiple instances so their requests are not made simultaneously. |
+| `frameWidth` | Number | `300` | Width of the rendered module column in pixels. Values below `100` are raised to `100`. |
+| `updateInterval` | Number | `10` | How frequently, in minutes, to poll NOAA for updated data. Values below `5` are raised to `5`. |
+| `requestDelay` | Number | `0` | Delay before the request, in milliseconds. Negative values are raised to `0`. |
 | `updateFadeSpeed` | Number | `500` | Fade duration during a data refresh, in milliseconds. Set it to `0` to disable the fade. |
 | `colored` | Boolean | `true` | Whether to present the module in color. When `false`, the monochrome version of the selected icon set is used when available. |
 | `showCurrentConditions` | Boolean | `true` | Whether to show the current temperature and current-conditions icon. |
@@ -55,16 +55,19 @@ Find out your latitude and longitude here:
 | `forecastHeaderText` | String | `""` | Text displayed above the forecast. An empty string hides the header. |
 | `showForecastTableColumnHeaderIcons` | Boolean | `true` | Whether to show icon-based column headers in the table layout. |
 | `showHourlyForecast` | Boolean | `true` | Whether to show hourly forecasts. Used with `hourlyForecastInterval` and `maxHourliesToShow`. |
-| `hourlyForecastInterval` | Number | `3` | Number of hours between each displayed hourly forecast. |
-| `maxHourliesToShow` | Number | `3` | Maximum number of hourly forecasts to display. |
+| `hourlyForecastInterval` | Number | `3` | Number of hours between each displayed hourly forecast. Values below `1` are raised to `1`. |
+| `maxHourliesToShow` | Number | `3` | Maximum number of hourly forecasts to display. Values below `0` are raised to `0`, and requests beyond the available NOAA data stop safely. |
 | `showDailyForecast` | Boolean | `true` | Whether to show daily forecasts. Used with `maxDailiesToShow`. |
-| `maxDailiesToShow` | Number | `3` | Maximum number of daily forecasts to display. |
+| `maxDailiesToShow` | Number | `3` | Maximum number of daily forecasts to display. Values below `0` are raised to `0`, and requests beyond the available NOAA data stop safely. |
 | `showPrecipitation` | Boolean | `true` | Whether to show precipitation details for current, hourly, and daily conditions. In the table layout, accumulation is stacked beneath precipitation chance. |
 | `showPrecipitationStartStop` | Boolean | `false` | Whether to show a message when rain, snow, or other precipitation is expected to start or stop within 24 hours. |
 | `showWind` | Boolean | `true` | Whether to show wind information for current, hourly, and daily conditions. |
 | `concise` | Boolean | `true` | Whether to use shorter summaries and omit details such as precipitation accumulation and wind gusts. |
 | `iconset` | String | `"1c"` | Icon set used for forecast and inline icons. See the preview below. |
 | `mainIconset` | String | `"1c"` | Icon set used for the main current-weather icon. |
+| `mainIconSize` | Number | `100` | Main current-weather icon size in pixels. |
+| `forecastTiledIconSize` | Number | `70` | Animated forecast icon size in pixels for the tiled layout. |
+| `forecastTableIconSize` | Number | `30` | Animated forecast icon size in pixels for the table layout. |
 | `useAnimatedIcons` | Boolean | `true` | Legacy Skycons animation support. Prefer the `6fa` or `6oa` animated icon sets. Flat icons are still used for inline details. |
 | `animateMainIconOnly` | Boolean | `true` | Whether legacy Skycons animation is limited to the main current-conditions icon. Disabling this may affect performance on low-powered devices. |
 | `showInlineIcons` | Boolean | `true` | Whether to prefix wind and precipitation information with icons. This primarily affects the tiled layout. |
@@ -121,6 +124,10 @@ config: {
 ```
 
 Replace `7c` with `7m` or `8c` to use one of the other sets.
+
+## Data reliability
+
+Requests to NOAA use an identifying user agent, timeouts, and up to three attempts with exponential backoff. Overlapping updates for the same module instance are skipped. The location endpoint is cached for one hour, while forecast data is always refreshed. A failed or incomplete update does not replace the last successful forecast; the display marks retained data as potentially outdated until a complete update succeeds.
 
 ## Layout examples
 

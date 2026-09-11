@@ -47,6 +47,8 @@ describe("getTemplateData Tests", () => {
     };
     module.identifier = "test_module_template";
     module.formattedWeatherData = null;
+    module.weatherError = null;
+    module.weatherDataStale = false;
     module.dataRefreshTimeStamp = null;
     module.file = jest.fn((path) => `/modules/MMM-NOAAForecast/${path}`);
     module.translate = jest.fn((key) =>
@@ -63,6 +65,8 @@ describe("getTemplateData Tests", () => {
 
       expect(result).toHaveProperty("phrases");
       expect(result).toHaveProperty("loading");
+      expect(result).toHaveProperty("weatherError");
+      expect(result).toHaveProperty("weatherDataStale");
       expect(result).toHaveProperty("config");
       expect(result).toHaveProperty("forecast");
       expect(result).toHaveProperty("inlineIcons");
@@ -102,6 +106,18 @@ describe("getTemplateData Tests", () => {
       const result = module.getTemplateData();
 
       expect(result.loading).toBe(false);
+    });
+
+    it("should expose stale state while retaining forecast data", () => {
+      module.formattedWeatherData = { currently: {}, hourly: [], daily: [] };
+      module.weatherError = "NOAA is unavailable";
+      module.weatherDataStale = true;
+
+      const result = module.getTemplateData();
+
+      expect(result.loading).toBe(false);
+      expect(result.weatherError).toBe("NOAA is unavailable");
+      expect(result.weatherDataStale).toBe(true);
     });
   });
 

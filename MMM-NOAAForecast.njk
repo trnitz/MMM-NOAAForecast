@@ -1,10 +1,18 @@
 <div class="wrapper {{ config.forecastLayout }} {% if config.colored %} colored{% endif %}{% if config.showInlineIcons %} inline-icons{% endif %}{% if config.forecastHeaderText %} with-forecast-header{% endif %}{% if config.showForecastTableColumnHeaderIcons and config.forecastLayout == "table" %} with-column-header-icons{% endif %}" style="width:{{ config.frameWidth }}px">
 
-  {% if loading %}
+  {% if weatherError and not weatherDataStale %}
+
+    <div class="weather-status weather-error dimmed light small">{{ phrases.unavailable }}</div>
+
+  {% elif loading %}
 
     <div class="dimmed light small">{{ phrases.loading | safe }}</div>
 
   {% else %}
+
+    {% if weatherDataStale %}
+      <div class="weather-status weather-stale dimmed light small">{{ phrases.stale }}</div>
+    {% endif %}
 
     {# -------------- Current Conditions -------------- #}
     {% if config.showCurrentConditions %}
