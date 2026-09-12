@@ -127,12 +127,40 @@ Replace `7c` with `7m` or `8c` to use one of the other sets.
 
 ## Data reliability
 
-Requests to NOAA use an identifying user agent, timeouts, and up to three attempts with exponential backoff. Overlapping updates for the same module instance are skipped. The location endpoint is cached for one hour, while forecast data is always refreshed. A failed or incomplete update does not replace the last successful forecast; the display marks retained data as potentially outdated until a complete update succeeds.
+The module retries failed NOAA requests up to three times and prevents updates from running at the same time. Location data is cached for one hour, but forecasts are refreshed with every update. If an update fails, the module keeps the last successful forecast and marks it as potentially outdated.
+
+### Weather data unavailable
+
+If NOAA cannot provide a complete forecast before any weather data has loaded, the module displays **Weather data temporarily unavailable** instead of showing a partial forecast. A later successful update replaces this message with the forecast automatically.
+
+![Weather data temporarily unavailable](screenshots/compact_space_saving_table_layout_error.png?raw=true)
+
+### Stale weather data
+
+If an update fails after a forecast has loaded successfully, the module keeps the last successful forecast visible and displays **Weather data may be outdated**. A later successful update removes the warning automatically.
+
+The stale state is triggered by a failed update; it is not currently based on how old the displayed weather data is.
+
+![Weather data may be outdated](screenshots/compact_space_saving_table_layout_stale.png?raw=true)
 
 ## Layout examples
 
+### Space-saving table layout
+
+A compact vertical display combining current conditions with hourly and daily forecasts in an easy-to-scan table.
+
 ![Space-saving table layout](screenshots/compact_space_saving_table_layout.png?raw=true)
+
+### Current conditions without a forecast
+
+A current-conditions-only display with the temperature, high and low, dew point, wind, and NOAA's detailed forecast text.
+
 ![Current conditions without a forecast](screenshots/current_contditions_no_forecast_layout.png?raw=true)
+
+### Wide, colorful tiled layout
+
+A wide display with colorful icons, current conditions, forecast text, and an extended outlook arranged in hourly and daily tiles.
+
 ![Wide, colorful tiled layout](screenshots/wide_colorful_tiled_layout.png?raw=true)
 
 ## Styling
