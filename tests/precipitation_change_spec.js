@@ -4,6 +4,7 @@
  */
 
 const moment = require("moment");
+const translations = require("../translations/en.json");
 
 // Make moment globally available for the module
 global.moment = moment;
@@ -42,6 +43,13 @@ describe("Precipitation Change Analysis Tests", () => {
     };
     module.identifier = "test_module_precip";
     module.weatherData = null;
+    module.translate = jest.fn((key, replacements = {}) => {
+      let translation = translations[key] || key;
+      Object.entries(replacements).forEach(([name, value]) => {
+        translation = translation.split(`{${name}}`).join(String(value));
+      });
+      return translation;
+    });
   });
 
   /**

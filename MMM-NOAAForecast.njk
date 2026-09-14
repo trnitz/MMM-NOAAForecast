@@ -25,7 +25,7 @@
           {% endif %}
           <span class="current temperature bright large light">{{ forecast.currently.temperature }}</span>
           {% if config.showFeelsLike %}
-            <span class="current feelslike dimmed light"><span class="feelslike-label">feels like</span> {{ forecast.currently.feelslike }}</span>
+            <span class="current feelslike dimmed light"><span class="feelslike-label">{{ phrases.feelsLike }}</span> {{ forecast.currently.feelslike }}</span>
           {% endif %}
         </span>
       </div>

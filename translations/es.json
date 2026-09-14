@@ -1,0 +1,13 @@
+{
+  "WEATHER_UNAVAILABLE": "Datos meteorológicos temporalmente no disponibles",
+  "WEATHER_STALE": "Los datos meteorológicos pueden estar desactualizados",
+  "FEELS_LIKE": "sensación térmica",
+  "PRECIPITATION_RAIN": "Lluvia",
+  "PRECIPITATION_SNOW": "Nieve",
+  "PRECIPITATION_SLEET": "Aguanieve",
+  "PRECIPITATION_GENERIC": "Precipitación",
+  "PRECIPITATION_EXPECTED_AT": "Se espera {precipitation} a las {time}",
+  "PRECIPITATION_EXPECTED_AT_TOMORROW": "Se espera {precipitation} mañana a las {time}",
+  "PRECIPITATION_ENDING_BY": "{precipitation} terminará a las {time}",
+  "PRECIPITATION_ENDING_BY_TOMORROW": "{precipitation} terminará mañana a las {time}"
+}

@@ -4,6 +4,7 @@
  */
 
 const moment = require("moment");
+const translations = require("../translations/en.json");
 
 // Make moment globally available for the module
 global.moment = moment;
@@ -52,7 +53,7 @@ describe("getTemplateData Tests", () => {
     module.dataRefreshTimeStamp = null;
     module.file = jest.fn((path) => `/modules/MMM-NOAAForecast/${path}`);
     module.translate = jest.fn((key) =>
-      key === "LOADING" ? "Loading..." : key
+      key === "LOADING" ? "Loading..." : translations[key] || key
     );
   });
 
@@ -80,6 +81,25 @@ describe("getTemplateData Tests", () => {
       const result = module.getTemplateData();
 
       expect(result.phrases.loading).toBeDefined();
+    });
+
+    it("should provide translated status and feels-like phrases", () => {
+      const result = module.getTemplateData();
+
+      expect(result.phrases.unavailable).toBe(
+        "Weather data temporarily unavailable"
+      );
+      expect(result.phrases.stale).toBe("Weather data may be outdated");
+      expect(result.phrases.feelsLike).toBe("feels like");
+    });
+
+    it("should register each bundled translation file", () => {
+      expect(module.getTranslations()).toEqual({
+        en: "translations/en.json",
+        de: "translations/de.json",
+        es: "translations/es.json",
+        fr: "translations/fr.json"
+      });
     });
   });
 

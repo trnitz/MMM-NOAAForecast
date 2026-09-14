@@ -79,6 +79,10 @@ Find out your latitude and longitude here:
 | `label_days` | Array of strings | `['Sun', 'Mon', 'Tue', 'Wed', 'Thur', 'Fri', 'Sat']` | Day labels beginning with Sunday at index `0`. |
 | `label_ordinals` | Array of strings | 16 compass points | Wind-direction labels beginning with north at index `0` and proceeding clockwise. |
 
+### Localization
+
+The module follows MagicMirror's global `language` setting for its status messages, feels-like label, and precipitation start/stop messages. English, French, German, and Spanish translations are included. Configurable labels such as `label_high`, `label_low`, `label_gust`, `label_days`, and `label_ordinals` remain available for further customization. NOAA-supplied forecast descriptions are displayed as provided by NOAA.
+
 ## Sample Configuration
 
 ```

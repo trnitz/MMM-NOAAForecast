@@ -80,6 +80,15 @@ Module.register("MMM-NOAAForecast", {
     return ["MMM-NOAAForecast.css"];
   },
 
+  getTranslations: function () {
+    return {
+      en: "translations/en.json",
+      de: "translations/de.json",
+      es: "translations/es.json",
+      fr: "translations/fr.json"
+    };
+  },
+
   getTemplate: function () {
     return "MMM-NOAAForecast.njk";
   },
@@ -95,8 +104,9 @@ Module.register("MMM-NOAAForecast", {
     return {
       phrases: {
         loading: this.translate("LOADING"),
-        unavailable: "Weather data temporarily unavailable",
-        stale: "Weather data may be outdated"
+        unavailable: this.translate("WEATHER_UNAVAILABLE"),
+        stale: this.translate("WEATHER_STALE"),
+        feelsLike: this.translate("FEELS_LIKE")
       },
       loading: this.formattedWeatherData === null ? true : false,
       weatherError: this.weatherError,
@@ -880,11 +890,31 @@ Module.register("MMM-NOAAForecast", {
      * @param {string|null} precipType One of "rain", "snow", "sleet", or null/other.
      * @returns {string} Capitalized label suitable for inline messaging.
      */
+    var self = this;
+
     function formatPrecipLabel(precipType) {
-      if (precipType === "snow") return "Snow";
-      if (precipType === "rain") return "Rain";
-      if (precipType === "sleet") return "Sleet";
-      return "Precipitation";
+      if (precipType === "snow") return self.translate("PRECIPITATION_SNOW");
+      if (precipType === "rain") return self.translate("PRECIPITATION_RAIN");
+      if (precipType === "sleet") {
+        return self.translate("PRECIPITATION_SLEET");
+      }
+      return self.translate("PRECIPITATION_GENERIC");
+    }
+
+    function formatPrecipMessage(type, label, time, isTomorrow) {
+      var translationKey =
+        type === "start"
+          ? isTomorrow
+            ? "PRECIPITATION_EXPECTED_AT_TOMORROW"
+            : "PRECIPITATION_EXPECTED_AT"
+          : isTomorrow
+            ? "PRECIPITATION_ENDING_BY_TOMORROW"
+            : "PRECIPITATION_ENDING_BY";
+
+      return self.translate(translationKey, {
+        precipitation: label,
+        time: time
+      });
     }
 
     var currentHour = this.weatherData.hourly[0];
@@ -916,13 +946,17 @@ Module.register("MMM-NOAAForecast", {
 
         var timeStr = futureMoment.format(this.config.label_timeFormat);
         var isTomorrow = !futureMoment.isSame(now, "day");
-        var tomorrowStr = isTomorrow ? " tomorrow" : "";
         var label = formatPrecipLabel(precipType);
         return {
           type: "start",
           precipType: precipType,
           time: timeStr,
-          message: `${label} expected at ${timeStr}${tomorrowStr}`
+          message: formatPrecipMessage(
+            "start",
+            label,
+            timeStr,
+            isTomorrow
+          )
         };
       } else if (currentHasPrecip && !futureHasPrecip) {
         // Prefer the end of the last hourly period that had precipitation.
@@ -954,14 +988,18 @@ Module.register("MMM-NOAAForecast", {
 
         var stopTimeStr = stopMoment.format(this.config.label_timeFormat);
         var stopIsTomorrow = !stopMoment.isSame(now, "day");
-        var stopTomorrowStr = stopIsTomorrow ? " tomorrow" : "";
         var stopLabel = formatPrecipLabel(currentPrecipType);
 
         return {
           type: "stop",
           precipType: currentPrecipType,
           time: stopTimeStr,
-          message: `${stopLabel} ending by ${stopTimeStr}${stopTomorrowStr}`
+          message: formatPrecipMessage(
+            "stop",
+            stopLabel,
+            stopTimeStr,
+            stopIsTomorrow
+          )
         };
       }
     }
