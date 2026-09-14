@@ -554,6 +554,19 @@ describe("MMM-NOAAForecast Comprehensive Tests", () => {
       expect(result.windGust).toBeNull();
     });
 
+    it("should replace NOAA wind speed ranges with an unspaced dash", () => {
+      const result = module.formatWind("5 to 13 mph", "NW", null);
+
+      expect(result.windSpeed).toBe("5-13 mph ");
+    });
+
+    it("should preserve the dashed range in verbose mode", () => {
+      module.config.concise = false;
+      const result = module.formatWind("5 to 13 mph", "NW", null);
+
+      expect(result.windSpeed).toBe("5-13 mph NW");
+    });
+
     it("should format wind with direction in verbose mode", () => {
       module.config.concise = false;
       const result = module.formatWind("10", "NW", null);

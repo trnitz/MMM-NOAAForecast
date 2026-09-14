@@ -1365,9 +1365,12 @@ Module.register("MMM-NOAAForecast", {
     };
   },
 
+  formatWindSpeedRange: function (speed) {
+    return String(speed).replace(/\s+to\s+/gi, "-");
+  },
+
   compactWindSpeed: function (speed) {
-    return String(speed)
-      .replace(/\s+to\s+/i, "-")
+    return this.formatWindSpeedRange(speed)
       .replace(/\s*(?:mph|km\/h|m\/s)\b/i, "")
       .trim();
   },
@@ -1393,7 +1396,9 @@ Module.register("MMM-NOAAForecast", {
     }
 
     return {
-      windSpeed: `${speed} ${!this.config.concise ? `${bearing}` : ""}`,
+      windSpeed: `${this.formatWindSpeedRange(speed)} ${
+        !this.config.concise ? `${bearing}` : ""
+      }`,
       windGust: windGust
     };
   },
