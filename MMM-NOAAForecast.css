@@ -199,6 +199,11 @@
   .wrapper.tiled
   .forecast-container
   .forecast-item
+  .dew-point-container,
+.MMM-NOAAForecast
+  .wrapper.tiled
+  .forecast-container
+  .forecast-item
   .precipitation-container,
 .MMM-NOAAForecast
   .wrapper.tiled
@@ -263,6 +268,11 @@
   .forecast-container
   .forecast-item
   .precipitation-container,
+.MMM-NOAAForecast
+  .wrapper.tiled
+  .forecast-container
+  .forecast-item
+  .dew-point-container,
 .MMM-NOAAForecast
   .wrapper.tiled
   .forecast-container
@@ -409,6 +419,15 @@
 }
 
 .MMM-NOAAForecast
+  .wrapper.table.with-column-header-icons
+  .forecast-container
+  .forecast-item
+  .dew-point-container
+  .inline-icon {
+  display: none;
+}
+
+.MMM-NOAAForecast
   .wrapper.table
   .forecast-container
   .forecast-item
@@ -483,6 +502,15 @@
 
 .MMM-NOAAForecast .wrapper.table .forecast-container .forecast-item .wind-container {
   min-width: 3.5em;
+}
+
+.MMM-NOAAForecast
+  .wrapper.table
+  .forecast-container
+  .forecast-item
+  .dew-point-container {
+  min-width: 2.75em;
+  white-space: nowrap;
 }
 
 .MMM-NOAAForecast

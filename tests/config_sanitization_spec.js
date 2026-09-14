@@ -224,6 +224,8 @@ describe("Configuration Sanitization Tests", () => {
 
     it("should leave dew point hidden by default", () => {
       expect(module.defaults.showDewPoint).toBe(false);
+      expect(module.defaults.showHourlyDewPoint).toBe(false);
+      expect(module.defaults.showDailyDewPoint).toBe(false);
     });
 
     it("should have sensible default for maxHourliesToShow", () => {

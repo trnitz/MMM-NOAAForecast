@@ -51,6 +51,8 @@ Find out your latitude and longitude here:
 | `showCurrentConditions` | Boolean | `true` | Whether to show the current temperature and current-conditions icon. |
 | `showExtraCurrentConditions` | Boolean | `true` | Whether to show high/low temperatures, precipitation, wind speed, and other enabled current-condition details. |
 | `showDewPoint` | Boolean | `false` | Whether to show the current dew point. The value follows the configured global units. |
+| `showHourlyDewPoint` | Boolean | `false` | Whether to show the dew point for each displayed hourly forecast. The value follows the configured global units. |
+| `showDailyDewPoint` | Boolean | `false` | Whether to show the dew point sampled at the start of each displayed daily forecast period. The value follows the configured global units. |
 | `showSummary` | Boolean | `true` | Whether to show the forecast summary. |
 | `forecastHeaderText` | String | `""` | Text displayed above the forecast. An empty string hides the header. |
 | `showForecastTableColumnHeaderIcons` | Boolean | `true` | Whether to show icon-based column headers in the table layout. |
@@ -79,6 +81,12 @@ Find out your latitude and longitude here:
 | `label_days` | Array of strings | `['Sun', 'Mon', 'Tue', 'Wed', 'Thur', 'Fri', 'Sat']` | Day labels beginning with Sunday at index `0`. |
 | `label_ordinals` | Array of strings | 16 compass points | Wind-direction labels beginning with north at index `0` and proceeding clockwise. |
 
+### Daily dew point and gust semantics
+
+NOAA daily forecasts are periods with explicit start and end times (often separate daytime and nighttime periods). The displayed daily dew point is the NOAA grid value at the start of the period selected for that date; it is a point-in-time value, not a daily mean, minimum, or maximum.
+
+Daily wind gust is the maximum valid NOAA grid gust from every grid interval that overlaps that displayed forecast period. It follows `showWind` and the existing wind formatting: regular gust detail is omitted in concise mode, while `compactForecastWind: true` uses the compact `G` notation. Dew points and gusts use MagicMirror's selected imperial or metric units.
+
 ### Localization
 
 The module follows MagicMirror's global `language` setting for its status messages, feels-like label, and precipitation start/stop messages. English, French, German, and Spanish translations are included. Configurable labels such as `label_high`, `label_low`, `label_gust`, `label_days`, and `label_ordinals` remain available for further customization. NOAA-supplied forecast descriptions are displayed as provided by NOAA.
@@ -96,7 +104,9 @@ The module follows MagicMirror's global `language` setting for its status messag
     longitude: "-104.9902",
     iconset: "1c",
     concise: false,
-    forecastLayout: "table"
+    forecastLayout: "table",
+    showHourlyDewPoint: true,
+    showDailyDewPoint: true
   }
 },
 ```

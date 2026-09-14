@@ -32,6 +32,8 @@ Module.register("MMM-NOAAForecast", {
     showWind: true,
     showFeelsLike: true,
     showDewPoint: false,
+    showHourlyDewPoint: false,
+    showDailyDewPoint: false,
     showPrecipitationStartStop: false,
     iconset: "1c",
     mainIconset: "1c",
@@ -557,6 +559,77 @@ Module.register("MMM-NOAAForecast", {
     return this.convertIfNeeded(val, this.weatherData.grid[gridKey].uom);
   },
 
+  getMaximumGridValueOverlappingPeriod: function (
+    startTime,
+    endTime,
+    gridKey
+  ) {
+    if (
+      !this.weatherData ||
+      !this.weatherData.grid ||
+      !this.weatherData.grid[gridKey] ||
+      !Array.isArray(this.weatherData.grid[gridKey].values)
+    ) {
+      return undefined;
+    }
+
+    var periodStart = moment.parseZone(startTime, moment.ISO_8601, true);
+    var periodEnd = moment.parseZone(endTime, moment.ISO_8601, true);
+    if (
+      !periodStart.isValid() ||
+      !periodEnd.isValid() ||
+      !periodEnd.isAfter(periodStart)
+    ) {
+      return undefined;
+    }
+
+    var maximum;
+    var values = this.weatherData.grid[gridKey].values;
+    for (var i = 0; i < values.length; i++) {
+      var entry = values[i];
+      if (!entry || !entry.validTime) continue;
+
+      var parts = entry.validTime.split("/");
+      if (
+        parts.length !== 2 ||
+        !parts[1] ||
+        parts[1].charAt(0).toUpperCase() !== "P"
+      ) {
+        continue;
+      }
+
+      var gridStart = moment.parseZone(parts[0], moment.ISO_8601, true);
+      var duration = moment.duration(parts[1]);
+      if (
+        !gridStart.isValid() ||
+        !duration ||
+        duration.asMilliseconds() <= 0
+      ) {
+        continue;
+      }
+
+      var gridEnd = gridStart.clone().add(duration);
+      var overlaps =
+        gridStart.isBefore(periodEnd) && gridEnd.isAfter(periodStart);
+      var value = entry.value;
+      var numericValue = parseFloat(String(value));
+      if (
+        overlaps &&
+        value !== null &&
+        value !== undefined &&
+        !isNaN(numericValue) &&
+        (maximum === undefined || numericValue > maximum)
+      ) {
+        maximum = numericValue;
+      }
+    }
+
+    return this.convertIfNeeded(
+      maximum,
+      this.weatherData.grid[gridKey].uom
+    );
+  },
+
   accumulateGridValue: function (startTime, gridKey) {
     if (
       !this.weatherData ||
@@ -816,6 +889,24 @@ Module.register("MMM-NOAAForecast", {
               : gridMinTemp.toString();
         } else {
           daily.minTemperature = undefined;
+        }
+
+        // This is the dew point at the displayed forecast period's start,
+        // not an average across the day.
+        daily.dewPoint = this.getGridValueWithinDuration(
+          daily.startTime,
+          "dewpoint"
+        );
+
+        // NOAA daily entries can cover daytime or nighttime periods. Use the
+        // highest gust from every grid interval overlapping that exact period.
+        var dailyWindGust = this.getMaximumGridValueOverlappingPeriod(
+          daily.startTime,
+          daily.endTime,
+          "windGust"
+        );
+        if (dailyWindGust !== undefined) {
+          daily.windGust = dailyWindGust;
         }
 
         // IMPORTANT: Commonly NOAA will only have 2-3 days out of data here, so
@@ -1101,12 +1192,7 @@ Module.register("MMM-NOAAForecast", {
       currently: {
         temperature: `${Math.round(this.weatherData.hourly[0].temperature)}°`,
         feelslike: `${Math.round(this.weatherData.hourly[0].feelsLike)}°`,
-        dewPoint:
-          this.weatherData.hourly[0].dewPoint !== undefined &&
-          this.weatherData.hourly[0].dewPoint !== null &&
-          !isNaN(parseFloat(this.weatherData.hourly[0].dewPoint))
-            ? `${Math.round(parseFloat(this.weatherData.hourly[0].dewPoint))}°`
-            : null,
+        dewPoint: this.formatDewPoint(this.weatherData.hourly[0].dewPoint),
         animatedIconId: this.config.useAnimatedIcons
           ? this.getAnimatedIconId()
           : null,
@@ -1175,6 +1261,8 @@ Module.register("MMM-NOAAForecast", {
       this.config.compactForecastWind
     );
 
+    fItem.dewPoint = this.formatDewPoint(fData.dewPoint);
+
     return fItem;
   },
 
@@ -1216,7 +1304,16 @@ Module.register("MMM-NOAAForecast", {
       this.config.compactForecastWind
     );
 
+    fItem.dewPoint = this.formatDewPoint(fData.dewPoint);
+
     return fItem;
+  },
+
+  formatDewPoint: function (dewPoint) {
+    if (dewPoint === null || dewPoint === undefined) return null;
+
+    var value = parseFloat(dewPoint);
+    return Number.isFinite(value) ? `${Math.round(value)}°` : null;
   },
 
   /*

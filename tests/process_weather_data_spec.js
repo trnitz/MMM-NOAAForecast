@@ -237,6 +237,71 @@ describe("Process Weather Data Pipeline Tests", () => {
 
       expect(module.weatherData.hourly[0].dewPoint).toBe("32");
     });
+
+    it("converts NOAA grid dew point data to Celsius", () => {
+      const startTime = moment().startOf("hour").format();
+      module.config.units = "metric";
+      module.weatherData = {
+        daily: [],
+        hourly: [
+          {
+            startTime,
+            temperature: 10,
+            temperatureUnit: "C",
+            relativeHumidity: { value: 60 }
+          }
+        ],
+        grid: {
+          dewpoint: {
+            uom: "wmoUnit:degF",
+            values: [{ validTime: `${startTime}/PT1H`, value: 32 }]
+          }
+        }
+      };
+
+      module.preProcessWeatherData();
+
+      expect(module.weatherData.hourly[0].dewPoint).toBe("0");
+    });
+
+    it("samples daily dew point at period start and uses the maximum gust", () => {
+      const startTime = "2025-11-22T06:00:00-05:00";
+      const endTime = "2025-11-22T18:00:00-05:00";
+      module.config.units = "imperial";
+      module.weatherData = {
+        daily: [
+          {
+            startTime,
+            endTime,
+            temperature: 50,
+            temperatureUnit: "F"
+          }
+        ],
+        hourly: [],
+        grid: {
+          dewpoint: {
+            uom: "wmoUnit:degC",
+            values: [
+              { validTime: "2025-11-22T05:00:00-05:00/PT3H", value: 0 },
+              { validTime: "2025-11-22T08:00:00-05:00/PT3H", value: 8 }
+            ]
+          },
+          windGust: {
+            uom: "wmoUnit:km_h-1",
+            values: [
+              { validTime: "2025-11-22T05:00:00-05:00/PT2H", value: 24 },
+              { validTime: "2025-11-22T12:00:00-05:00/PT3H", value: 48 },
+              { validTime: "2025-11-22T18:00:00-05:00/PT1H", value: 80 }
+            ]
+          }
+        }
+      };
+
+      module.preProcessWeatherData();
+
+      expect(module.weatherData.daily[0].dewPoint).toBe("32");
+      expect(module.weatherData.daily[0].windGust).toBe("30");
+    });
   });
 
   // ============================================================================

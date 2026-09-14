@@ -110,6 +110,12 @@
             <span class="weather-icon-header">&nbsp;</span>
             <span class="temperature-header">&nbsp;</span>
 
+            {% if config.showHourlyDewPoint or config.showDailyDewPoint %}
+              <span class="dew-point-header">
+                <img class="inline-icon dew-point-icon" src="{{ inlineIcons.dewPoint }}" alt="" />
+              </span>
+            {% endif %}
+
             {% if config.showPrecipitation %}
               <span class="precipitation-header">
                 <img class="inline-icon rain" src="{{ inlineIcons.rain }}" />
@@ -140,6 +146,17 @@
               {% endif %}
               </span>
               <span class="temperature small">{{ h.temperature }}</span>
+
+              {% if config.showHourlyDewPoint or (config.forecastLayout == "table" and config.showDailyDewPoint) %}
+                <span class="dew-point-container">
+                  {% if config.showHourlyDewPoint and h.dewPoint %}
+                    {% if config.showInlineIcons and (config.forecastLayout == "tiled" or not config.showForecastTableColumnHeaderIcons) %}
+                      <img class="inline-icon dew-point-icon" src="{{ inlineIcons.dewPoint }}" alt="" />
+                    {% endif %}
+                    <span class="dew-point">{{ h.dewPoint }}</span>
+                  {% endif %}
+                </span>
+              {% endif %}
 
               {% if config.showPrecipitation %}
 
@@ -198,6 +215,17 @@
                 <span class="temperature-separator dimmed">/</span>
                 <span class="low-temperature">{{ d.tempRange.low }}</span>
               </span>
+
+              {% if config.showDailyDewPoint or (config.forecastLayout == "table" and config.showHourlyDewPoint) %}
+                <span class="dew-point-container">
+                  {% if config.showDailyDewPoint and d.dewPoint %}
+                    {% if config.showInlineIcons and (config.forecastLayout == "tiled" or not config.showForecastTableColumnHeaderIcons) %}
+                      <img class="inline-icon dew-point-icon" src="{{ inlineIcons.dewPoint }}" alt="" />
+                    {% endif %}
+                    <span class="dew-point">{{ d.dewPoint }}</span>
+                  {% endif %}
+                </span>
+              {% endif %}
 
               {% if config.showPrecipitation %}
 

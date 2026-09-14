@@ -614,7 +614,8 @@ describe("MMM-NOAAForecast Comprehensive Tests", () => {
         snowAccumulation: null,
         windSpeed: "10",
         windDirection: "NW",
-        windGust: "15"
+        windGust: "15",
+        dewPoint: 0
       };
     });
 
@@ -626,6 +627,7 @@ describe("MMM-NOAAForecast Comprehensive Tests", () => {
       expect(result.iconPath).toBeDefined();
       expect(result.precipitation).toBeDefined();
       expect(result.wind).toBeDefined();
+      expect(result.dewPoint).toBe("0°");
     });
 
     it("should format time correctly", () => {
@@ -652,6 +654,14 @@ describe("MMM-NOAAForecast Comprehensive Tests", () => {
       expect(result.wind.windSpeed).toBe("10NW");
       expect(result.wind.windGust).toBe("G15");
     });
+
+    it("should hide a missing or invalid dew point", () => {
+      mockHourlyData.dewPoint = null;
+      expect(module.forecastHourlyFactory(mockHourlyData).dewPoint).toBeNull();
+
+      mockHourlyData.dewPoint = "not available";
+      expect(module.forecastHourlyFactory(mockHourlyData).dewPoint).toBeNull();
+    });
   });
 
   // ============================================================================
@@ -671,7 +681,8 @@ describe("MMM-NOAAForecast Comprehensive Tests", () => {
         snowAccumulation: null,
         windSpeed: "8",
         windDirection: "N",
-        windGust: "12"
+        windGust: "12",
+        dewPoint: 41.6
       };
     });
 
@@ -685,6 +696,7 @@ describe("MMM-NOAAForecast Comprehensive Tests", () => {
       expect(result.iconPath).toBeDefined();
       expect(result.precipitation).toBeDefined();
       expect(result.wind).toBeDefined();
+      expect(result.dewPoint).toBe("42°");
     });
 
     it("should format day name correctly", () => {
@@ -836,6 +848,76 @@ describe("MMM-NOAAForecast Comprehensive Tests", () => {
       );
 
       expect(result).toBe("18.3"); // 65F ≈ 18.3C
+    });
+  });
+
+  describe("getMaximumGridValueOverlappingPeriod", () => {
+    beforeEach(() => {
+      module.weatherData = {
+        grid: {
+          windGust: {
+            uom: "wmoUnit:km_h-1",
+            values: [
+              { validTime: "2025-11-22T04:00:00-05:00/PT3H", value: 20 },
+              { validTime: "2025-11-22T07:00:00-05:00/PT3H", value: null },
+              { validTime: "2025-11-22T09:00:00-05:00/PT4H", value: 48 },
+              { validTime: "2025-11-22T12:00:00-05:00/PT3H", value: 35 },
+              { validTime: "2025-11-22T15:00:00-05:00/PT1H", value: 99 }
+            ]
+          }
+        }
+      };
+    });
+
+    it("returns the maximum from all intervals overlapping the period", () => {
+      module.config.units = "metric";
+
+      expect(
+        module.getMaximumGridValueOverlappingPeriod(
+          "2025-11-22T06:00:00-05:00",
+          "2025-11-22T15:00:00-05:00",
+          "windGust"
+        )
+      ).toBe(48);
+    });
+
+    it("includes intervals crossing the period boundaries and converts units", () => {
+      module.config.units = "imperial";
+
+      expect(
+        module.getMaximumGridValueOverlappingPeriod(
+          "2025-11-22T06:00:00-05:00",
+          "2025-11-22T09:00:00-05:00",
+          "windGust"
+        )
+      ).toBe("12");
+    });
+
+    it("ignores intervals that only touch the period end", () => {
+      module.config.units = "metric";
+
+      expect(
+        module.getMaximumGridValueOverlappingPeriod(
+          "2025-11-22T13:00:00-05:00",
+          "2025-11-22T15:00:00-05:00",
+          "windGust"
+        )
+      ).toBe(35);
+    });
+
+    it("returns undefined when overlapping intervals have no values", () => {
+      module.weatherData.grid.windGust.values = [
+        { validTime: "2025-11-22T06:00:00-05:00/PT3H", value: null },
+        { validTime: "2025-11-22T09:00:00-05:00/PT3H", value: "missing" }
+      ];
+
+      expect(
+        module.getMaximumGridValueOverlappingPeriod(
+          "2025-11-22T06:00:00-05:00",
+          "2025-11-22T15:00:00-05:00",
+          "windGust"
+        )
+      ).toBeUndefined();
     });
   });
 
